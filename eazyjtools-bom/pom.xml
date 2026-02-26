@@ -16,9 +16,14 @@
     <name>EazyJTools BOM</name>
     <description>Bill of Materials for EazyJTools modules.</description>
 
-    <dependencyManagement>
-        <dependencies>
-        </dependencies>
-    </dependencyManagement>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.github.eazyjtools</groupId>
+				<artifactId>eazyjtools-parse</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>
