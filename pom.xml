@@ -53,4 +53,7 @@
         </dependency>
     </dependencies>
 	
+	<modules>
+		<module>eazyjtools-bom</module>
+	</modules>
 </project>
