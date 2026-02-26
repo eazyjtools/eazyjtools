@@ -291,6 +291,9 @@ public final class NumberParser {
 	 * @since 1.0.0
      */
     public static Double parseDoubleOrNull(String input, boolean trimInput) {
+		if (!trimInput && hasTrimWhitespace(input)) {
+			return null;
+		}
         Double v = parse(input, trimInput, Double::valueOf);
         return isFinite(v) ? v : null;
     }
@@ -331,6 +334,9 @@ public final class NumberParser {
 	 * @since 1.0.0
      */
     public static double parseDoubleOrDefault(String input, boolean trimInput, double defaultValue) {
+		if (!trimInput && hasTrimWhitespace(input)) {
+			return defaultValue;
+		}
         Double v = parse(input, trimInput, Double::valueOf);
         return isFinite(v) ? v : defaultValue;
     }
@@ -345,6 +351,35 @@ public final class NumberParser {
      */
     private static boolean isFinite(Double v) {
         return v != null && !v.isNaN() && !v.isInfinite();
+    }
+    
+    /**
+     * Checks whether the given input contains leading and/or trailing whitespace that would be removed by
+     * {@link String#trim()}.
+     * <p>
+     * This method compares the original string with its {@link String#trim()} result:
+     * if they differ, then the input has at least one whitespace character at the beginning and/or end
+     * (as defined by {@code trim()}, i.e. characters with code points {@code \u0000} through {@code \u0020}).
+     * </p>
+     *
+     * <h3>Notes</h3>
+     * <ul>
+     *   <li>If {@code input} is {@code null}, this method returns {@code false}.</li>
+     *   <li>This method uses {@link String#trim()}, not {@link String#strip()} — so it does not detect
+     *       all Unicode whitespace characters (e.g. NBSP {@code \u00A0}) unless they are removed by {@code trim()}.</li>
+     * </ul>
+     *
+     * @param input the input string to check; may be {@code null}
+     * @return {@code true} if {@code input} has leading/trailing whitespace removed by {@link String#trim()},
+     *         otherwise {@code false}
+     * @author romanzdev
+     * @since 1.0.0
+     */
+    private static boolean hasTrimWhitespace(String input) {
+        if (input == null) {
+            return false;
+        }
+        return !input.equals(input.trim());
     }
 
     /* ================ BigInteger parse methods  ================ */

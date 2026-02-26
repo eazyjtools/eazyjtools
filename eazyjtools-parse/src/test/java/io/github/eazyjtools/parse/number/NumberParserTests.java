@@ -532,7 +532,9 @@ public class NumberParserTests {
                     // non-finite -> empty
                     Arguments.of("NaN", "NaN", false, null),
                     Arguments.of("Infinity", "Infinity", false, null),
-                    Arguments.of("-Infinity", "-Infinity", false, null)
+                    Arguments.of("-Infinity", "-Infinity", false, null),
+                    Arguments.of("overflow to +Infinity (1e309)", "1e309", false, null),
+                    Arguments.of("overflow to -Infinity (-1e309)", "-1e309", false, null)
             );
         }
     }
@@ -582,7 +584,10 @@ public class NumberParserTests {
                     // non-finite -> null (explicitly rejected)
                     Arguments.of("NaN", "NaN", null),
                     Arguments.of("Infinity", "Infinity", null),
-                    Arguments.of("-Infinity", "-Infinity", null)
+                    Arguments.of("-Infinity", "-Infinity", null),
+                    
+                    Arguments.of("overflow to +Infinity (1e309)", "1e309", null),
+                    Arguments.of("overflow to -Infinity (-1e309)", "-1e309", null)
             );
         }
     }
@@ -611,7 +616,7 @@ public class NumberParserTests {
         static Stream<Arguments> cases() {
             return Stream.of(
                     Arguments.of("spaces around (trim=true)", " 1.25 ", true, 1.25),
-                    Arguments.of("spaces around (trim=false)", " 1.25 ", true, 1.25),
+                    Arguments.of("spaces around (trim=false)", " 1.25 ", false, null),
 
                     Arguments.of("valid scientific", "1e3", false, 1000.0),
                     Arguments.of("invalid comma", "1,25", true, null),
@@ -651,7 +656,10 @@ public class NumberParserTests {
                     Arguments.of("invalid", "2,5", 9.9, 9.9),
                     Arguments.of("NaN -> default", "NaN", 9.9, 9.9),
                     Arguments.of("Infinity -> default", "Infinity", 9.9, 9.9),
-                    Arguments.of("-Infinity -> default", "-Infinity", 9.9, 9.9)
+                    Arguments.of("-Infinity -> default", "-Infinity", 9.9, 9.9),
+                    
+                    Arguments.of("overflow to +Infinity (1e309) -> default", "1e309", 9.9, 9.9),
+                    Arguments.of("overflow to -Infinity (-1e309) -> default", "-1e309", 9.9, 9.9)
             );
         }
     }
@@ -676,7 +684,7 @@ public class NumberParserTests {
         static Stream<Arguments> cases() {
             return Stream.of(
                     Arguments.of("spaces around (trim=true)", " 8.5 ", true, 7.7, 8.5),
-                    Arguments.of("spaces around (trim=false)", " 8.5 \t", false, 7.7, 8.5),
+                    Arguments.of("spaces around (trim=false)", " 8.5 \t", false, 7.7, 7.7),
 
                     Arguments.of("valid", "8.5", false, 7.7, 8.5),
                     Arguments.of("invalid", "8,5", true, 7.7, 7.7),
@@ -1066,6 +1074,15 @@ public class NumberParserTests {
         });
         assertTrue(ex.getMessage().equals("defaultValue parameter cannot be null"));
     }
+    
+    @Test
+    @DisplayName("BigDecimal: parsing preserves scale for string constructor")
+    void givenStringWithTrailingZeros_whenParseBigDecimal_thenScaleIsPreserved() {
+        BigDecimal v = NumberParser.parseBigDecimalOrNull("00042.500", true);
+        assertNotNull(v);
+        assertEquals(new BigDecimal("42.500"), v);
+        assertEquals(3, v.scale());
+    }
 
     /* ------------------------------------------------------------------------------------ */
     /* helpers                                                                              */
@@ -1077,6 +1094,6 @@ public class NumberParserTests {
             return;
         }
         assertNotNull(actual);
-        assertEquals(0, expected.compareTo(actual), "BigDecimal values are not equal by compareTo()");
+        assertEquals(expected, actual);
     }
 }
